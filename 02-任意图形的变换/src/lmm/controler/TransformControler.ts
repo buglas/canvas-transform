@@ -225,9 +225,10 @@ class TransformControler extends Object2D {
 
 	/* 相对变换 */
 	relativeTransform(controlState: string) {
-		const { transformer, start2Orign, dragStart, dragEnd, end2Orign } = this
+		const { transformer, start2Orign, dragStart, dragEnd, end2Orign, obj } =
+			this
 		const key = controlState + Number(this.shiftKey)
-		if (!transformer[key]) {
+		if (!obj || !transformer[key]) {
 			return
 		}
 		if (controlState === 'move') {
@@ -235,6 +236,7 @@ class TransformControler extends Object2D {
 		} else {
 			transformer[key](start2Orign, end2Orign)
 		}
+		this.dispatchEvent({ type: 'transformed', obj })
 	}
 
 	/*  设置基点(图案父级坐标系) */

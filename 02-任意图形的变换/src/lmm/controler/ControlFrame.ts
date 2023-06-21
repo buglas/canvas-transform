@@ -52,6 +52,7 @@ class ControlFrame {
 	}
 	set obj(val) {
 		this._obj = val
+		val.computeBoundingBox()
 		this.updateVertives()
 	}
 
