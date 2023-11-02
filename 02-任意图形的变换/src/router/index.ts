@@ -37,6 +37,10 @@ const routes = [
 		path: '/Text2D',
 		component: () => import('../examples/Text2D.vue'),
 	},
+	{
+		path: '/TShirtEffect',
+		component: () => import('../examples/TShirtEffect.vue'),
+	},
 ]
 const router = createRouter({
 	history: createWebHistory(),

@@ -22,7 +22,7 @@ onMounted(() => {
 	</div>
 	<!-- 导航 -->
 	<nav>
-		<div class="nac-tit">测试</div>
+		<div class="nav-tit">测试</div>
 		<router-link to="/">HelloWorld</router-link>
 		<router-link to="/MatrixOfCanvas">MatrixOfCanvas</router-link>
 		<router-link to="/Camera">Camera</router-link>
@@ -32,6 +32,7 @@ onMounted(() => {
 		<router-link to="/OrbitControler">OrbitControler</router-link>
 		<router-link to="/Text2D">Text2D</router-link>
 		<router-link to="/TransformControler">TransformControler</router-link>
+		<router-link to="/TShirtEffect">TShirtEffect</router-link>
 	</nav>
 </template>
 

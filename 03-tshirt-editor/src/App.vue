@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { Editor } from './component/Editor'
 import { Effector } from './component/Effector'
 
-/* 模拟fetch 请求后端图案库数据 */
+// 模拟fetch 请求后端图案库数据
 const patternData = new Promise<string[]>((resolve) => {
 	const arr: string[] = []
 	for (let i = 1; i <= 8; i++) {
@@ -24,10 +24,10 @@ const TShirtData = new Promise<{
 	designImgSrc: string
 	effectImgData: ImgType[]
 }>((resolve) => {
+	const path = 'https://yxyy-pandora.oss-cn-beijing.aliyuncs.com/stamp-images/'
 	resolve({
 		/* 设计图 */
-		designImgSrc:
-			'https://yxyy-pandora.oss-cn-beijing.aliyuncs.com/stamp-images/design.png',
+		designImgSrc: path + 'design.png',
 		/* 效果图素材 */
 		effectImgData: [
 			{
@@ -35,24 +35,20 @@ const TShirtData = new Promise<{
 				globalCompositeOperation: 'source-over',
 			},
 			{
-				src: 'https://yxyy-pandora.oss-cn-beijing.aliyuncs.com/stamp-images/shirt-mask.png',
+				src: path + 'shirt-shadow.jpg',
+				globalCompositeOperation: 'multiply',
+			},
+			{
+				src: path + 'shirt-mask.png',
 				globalCompositeOperation: 'destination-in',
 			},
 			{
-				src: 'https://yxyy-pandora.oss-cn-beijing.aliyuncs.com/stamp-images/shirt-shadow.png',
-				globalCompositeOperation: 'multiply',
+				src: '',
+				globalCompositeOperation: 'destination-in',
 			},
-			// {
-			// 	src: '',
-			// 	globalCompositeOperation: 'destination-in',
-			// },
-			// {
-			// 	src: 'https://yxyy-pandora.oss-cn-beijing.aliyuncs.com/stamp-images/shirt-origin.jpg',
-			// 	globalCompositeOperation: 'destination-over',
-			// },
 			{
-				src: 'https://yxyy-pandora.oss-cn-beijing.aliyuncs.com/stamp-images/shirt-noPattern.png',
-				globalCompositeOperation: 'source-over',
+				src: path + 'shirt-origin.jpg',
+				globalCompositeOperation: 'destination-over',
 			},
 		],
 	})
@@ -72,8 +68,8 @@ const editor = new Editor()
 const {
 	cursor,
 	transformControler,
-	group: { children },
 	group,
+	group: { children },
 } = editor
 transformControler.addEventListener('selected', ({ obj }) => {
 	// 更新图层选择状态
@@ -86,6 +82,7 @@ group.addEventListener('remove', ({ obj: { uuid } }) => {
 
 /* 效果图 */
 const effector = new Effector()
+
 /* 渲染效果图 */
 editor.addEventListener('render', () => {
 	effector.render()
@@ -115,14 +112,14 @@ onMounted(() => {
 	/* 图案编辑器 */
 	editor.onMounted(editorDomRef.value, effectDomRef.value)
 
-	/* 效果图 */
-	effector.onMounted(effectDomRef.value)
-
 	/* T恤数据 */
 	TShirtData.then(({ designImgSrc, effectImgData }) => {
 		editor.setDesignImg(designImgSrc)
 		effector.addImgs(effectImgData, editor.resultScene.canvas)
 	})
+
+	/* 效果图 */
+	effector.onMounted(effectDomRef.value)
 })
 
 /* 当点击图像库中的图案时，将图案添加到图案编辑器和图层中 */
@@ -213,16 +210,7 @@ function drop({ dataTransfer }: DragEvent, index: number) {
 			</div>
 		</div>
 	</div>
-	<div id="center" ref="editorDomRef" :style="{ cursor }">
-		<div class="tips">
-			<b>添加图案</b>: 点选图案库中的图案; <b>选择编辑视口中的图案</b>:
-			单击图案或单击相应图层; <b>中心缩放</b>: alt+缩放操作; <b>等比缩放</b>:
-			shift+缩放操作; <b>等量旋转</b>: shift+旋转操作; <b>删除图案</b>: Del;
-			<b>取消变换</b>: Esc 或点击空白处; <b>确认变换</b>: Enter;
-			<b>改变图案排列顺序</b>: 拖拽图层; <b>缩放视口</b>: 滑动鼠标滚轮;
-			<b>平移视口</b>: 按住鼠标滚轮移动鼠标。<b>兼容性</b>: PC端
-		</div>
-	</div>
+	<div id="center" ref="editorDomRef" :style="{ cursor }"></div>
 	<div id="right">
 		<div id="effect" ref="effectDomRef"></div>
 		<ul id="layers">
