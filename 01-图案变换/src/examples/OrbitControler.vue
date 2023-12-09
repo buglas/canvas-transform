@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { OrbitControler } from '../lmm/controler/OrbitControler'
 import { Scene } from '../lmm/core/Scene'
 import { Vector2 } from '../lmm/math/Vector2'
-import { Img } from '../lmm/objects/Img'
+import { Img2D } from '../lmm/objects/Img2D'
 
 // 获取父级属性
 defineProps({
@@ -23,11 +23,11 @@ const orbitControler = new OrbitControler(scene.camera)
 const image = new Image()
 image.src =
 	'https://yxyy-pandora.oss-cn-beijing.aliyuncs.com/stamp-images/1.png'
-const pattern = new Img({ image })
+const pattern = new Img2D({ image })
 scene.add(pattern)
 
 /* 测试 */
-function test(canvas: HTMLCanvasElement) {
+function test() {
 	const imgSize = new Vector2(image.width, image.height).multiplyScalar(0.6)
 	pattern.setOption({
 		/* 模型矩阵 */
@@ -40,48 +40,59 @@ function test(canvas: HTMLCanvasElement) {
 		offset: imgSize.clone().multiplyScalar(-0.5),
 	})
 
-	/* 按需渲染 */
-	orbitControler.addEventListener('change', () => {
-		scene.render()
-	})
-
-	/* 滑动滚轮缩放 */
-	canvas.addEventListener('wheel', ({ deltaY }) => {
-		orbitControler.doScale(deltaY)
-	})
-
-	/* 按住滚轮平移 */
-	canvas.addEventListener('pointerdown', (event: PointerEvent) => {
-		if (event.button == 1) {
-			orbitControler.pointerdown(event.clientX, event.clientY)
-		}
-	})
-	canvas.addEventListener('pointermove', (event: PointerEvent) => {
-		orbitControler.pointermove(event.clientX, event.clientY)
-	})
-	window.addEventListener('pointerup', (event: PointerEvent) => {
-		if (event.button == 1) {
-			orbitControler.pointerup()
-		}
-	})
-
 	/* 渲染 */
 	scene.render()
 }
+
+/* 按需渲染 */
+orbitControler.addEventListener('change', () => {
+  scene.render()
+})
+
+/* 滑动滚轮缩放 */
+function wheel({ deltaY,clientX,clientY }: WheelEvent){
+  // 基于画布中心缩放视口
+  // orbitControler.doScale(deltaY)
+
+  // 基于鼠标位置缩放口
+  orbitControler.doScale(deltaY,scene.canvastoClip(new Vector2(clientX,clientY)))
+}
+
+/* 按住滚轮平移 */
+function pointerdown(event: PointerEvent){
+  if (event.button == 1) {
+    orbitControler.pointerdown(event.clientX, event.clientY)
+  }
+}
+function pointermove(event: PointerEvent){
+  orbitControler.pointermove(event.clientX, event.clientY)
+}
+window.addEventListener('pointerup', (event: PointerEvent) => {
+  if (event.button == 1) {
+    orbitControler.pointerup()
+  }
+})
 
 onMounted(() => {
 	const canvas = canvasRef.value
 	if (canvas) {
 		scene.setOption({ canvas })
 		image.onload = function () {
-			test(canvas)
+			test()
 		}
 	}
 })
 </script>
 
 <template>
-	<canvas ref="canvasRef" :width="size.width" :height="size.height"></canvas>
+	<canvas 
+  ref="canvasRef" 
+  :width="size.width" 
+  :height="size.height"
+  @pointerdown="pointerdown"
+  @pointermove="pointermove"
+  @wheel="wheel"
+  ></canvas>
 </template>
 
 <style scoped></style>

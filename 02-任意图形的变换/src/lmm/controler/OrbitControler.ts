@@ -51,8 +51,11 @@ class OrbitControler extends EventDispatcher {
 		Object.assign(this, option)
 	}
 
-	/* 缩放 */
-	doScale(deltaY: number) {
+	/* 缩放 
+    deltaY: WheelEvent.deltaY
+    origin: 在裁剪坐标系内的缩放基点
+  */
+	/* doScale(deltaY: number) {
 		const { enableZoom, camera, zoomSpeed } = this
 		if (!enableZoom) {
 			return
@@ -63,6 +66,23 @@ class OrbitControler extends EventDispatcher {
 		} else {
 			camera.zoom *= scale
 		}
+		this.dispatchEvent(_changeEvent)
+	} */
+  doScale(deltaY: number,origin?:Vector2) {
+		const { enableZoom, camera, zoomSpeed } = this
+		if (!enableZoom) {
+			return
+		}
+		let scale = Math.pow(0.95, zoomSpeed)
+    if (deltaY > 0) {
+      scale=1/scale
+    }
+		camera.zoom *= scale
+    if(origin){
+      const P1=new Vector2().addVectors(origin,camera.position)
+      const P2=P1.clone().multiplyScalar(1/scale)
+      camera.position.add(P2.sub(P1))
+    }
 		this.dispatchEvent(_changeEvent)
 	}
 
@@ -106,3 +126,4 @@ class OrbitControler extends EventDispatcher {
 }
 
 export { OrbitControler }
+

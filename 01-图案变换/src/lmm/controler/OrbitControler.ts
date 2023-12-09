@@ -2,9 +2,11 @@ import { Vector2 } from '../math/Vector2'
 import { EventDispatcher } from '../core/EventDispatcher'
 import { Camera } from '../core/Camera'
 
+/* change 事件 */
+const _changeEvent = { type: 'change' }
+
 /* 暂存数据类型 */
 type Stage = {
-	cameraZoom: number
 	cameraPosition: Vector2
 	panStart: Vector2
 }
@@ -18,13 +20,8 @@ type Option = {
 	panSpeed?: number
 }
 
-/* change 事件 */
-const _changeEvent = { type: 'change' }
-
 /* 相机轨道控制 */
 class OrbitControler extends EventDispatcher {
-	// 相机
-	camera: Camera
 	// 允许缩放
 	enableZoom = true
 	// 缩放速度
@@ -40,15 +37,13 @@ class OrbitControler extends EventDispatcher {
 
 	//变换相机前的暂存数据
 	stage: Stage = {
-		cameraZoom: 1,
 		cameraPosition: new Vector2(),
 		panStart: new Vector2(),
 	}
 
-	constructor(camera: Camera, option: Option = {}) {
+	constructor(public camera: Camera, option?: Option) {
 		super()
-		this.camera = camera
-		this.setOption(option)
+		option && this.setOption(option)
 	}
 
 	/* 设置属性 */
@@ -56,19 +51,38 @@ class OrbitControler extends EventDispatcher {
 		Object.assign(this, option)
 	}
 
-	/* 缩放 */
-	doScale(deltaY: number) {
-		const { enableZoom, camera, zoomSpeed, stage } = this
+	/* 缩放 
+    deltaY: WheelEvent.deltaY
+    origin: 在裁剪坐标系内的缩放基点
+  */
+	/* doScale(deltaY: number) {
+		const { enableZoom, camera, zoomSpeed } = this
 		if (!enableZoom) {
 			return
 		}
-		stage.cameraZoom = camera.zoom
 		const scale = Math.pow(0.95, zoomSpeed)
 		if (deltaY > 0) {
 			camera.zoom /= scale
 		} else {
 			camera.zoom *= scale
 		}
+		this.dispatchEvent(_changeEvent)
+	} */
+  doScale(deltaY: number,origin?:Vector2) {
+		const { enableZoom, camera, zoomSpeed } = this
+		if (!enableZoom) {
+			return
+		}
+		let scale = Math.pow(0.95, zoomSpeed)
+    if (deltaY > 0) {
+      scale=1/scale
+    }
+		camera.zoom *= scale
+    if(origin){
+      const P1=new Vector2().addVectors(origin,camera.position)
+      const P2=P1.clone().multiplyScalar(1/scale)
+      camera.position.add(P2.sub(P1))
+    }
 		this.dispatchEvent(_changeEvent)
 	}
 
@@ -110,4 +124,6 @@ class OrbitControler extends EventDispatcher {
 		this.dispatchEvent(_changeEvent)
 	}
 }
+
 export { OrbitControler }
+
